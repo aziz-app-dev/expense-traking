@@ -1,6 +1,8 @@
-# Expense Tracking App
+# Expense Tracking App — React Native + Expo Personal Finance Manager
 
-A React Native expense tracking application built with Expo, Firebase, and Cloudinary. Track your income and expenses across multiple wallets, upload receipt images, and visualize your spending with charts.
+> Free, open-source **expense tracker** and **budgeting app** built with React Native, Expo Router, Firebase, and Cloudinary. Manage **multiple wallets**, log **income and expense transactions**, attach **receipt photos**, and visualize **weekly and monthly spending** with interactive charts — on **Android, iOS, and the Web**.
+
+**Keywords:** expense tracker, budgeting app, personal finance, money manager, React Native, Expo, Firebase, Cloudinary, wallet app, receipt scanner, spending tracker, income tracker, financial dashboard, cross-platform mobile app, TypeScript.
 
 ## Features
 
@@ -101,6 +103,71 @@ assets/        # Images and fonts
 - `npm run web` – run in the browser
 - `npm run lint` – lint the project
 - `npm run reset-project` – reset to a blank `app/` directory
+
+## SEO (Web Build)
+
+The Expo web target outputs a **static site** (`"output": "static"` in [app.json](app.json)), so the app can be indexed by search engines when deployed. Use the steps below to make the build **SEO-friendly**.
+
+### 1. Page metadata
+
+Expo Router supports per-route `<head>` tags via `expo-router/head`. Add a unique **title**, **meta description**, and **Open Graph / Twitter Card** tags on every top-level route so pages render with rich previews when shared on Google, LinkedIn, X, and Slack.
+
+```tsx
+import Head from 'expo-router/head';
+
+export default function Dashboard() {
+  return (
+    <>
+      <Head>
+        <title>Dashboard — Expense Tracker</title>
+        <meta name="description" content="See your weekly and monthly spending at a glance." />
+        <meta property="og:title" content="Expense Tracker — Personal Finance Dashboard" />
+        <meta property="og:description" content="Track income, expenses, and wallets across devices." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Head>
+      {/* ... */}
+    </>
+  );
+}
+```
+
+### 2. Semantic, crawlable content
+
+- Use headings (`<h1>`–`<h3>`) for landing-page content rather than styled `<Text>` only.
+- Provide `alt` text for images and `accessibilityLabel` for icon-only buttons — the same attributes help screen readers **and** crawlers.
+- Avoid blocking initial content behind authentication on marketing pages; render a **public landing route** with keyword-rich copy.
+
+### 3. Site-wide SEO files
+
+Add the following to the `public/` directory so they are served at the site root:
+
+- `public/robots.txt` — allow indexing and point to your sitemap.
+- `public/sitemap.xml` — list every public route (generate at build time).
+- `public/favicon.png` — already configured in [app.json](app.json#L27).
+
+### 4. Performance & Core Web Vitals
+
+Google ranks on **Core Web Vitals** (LCP, INP, CLS). This project already helps by:
+
+- Using `expo-image` with caching and automatic `contentFit` to minimize **CLS**.
+- Shipping static assets via Cloudinary (CDN-backed) to improve **LCP**.
+- Using `@shopify/flash-list` for virtualized lists to keep **INP** low.
+
+When deploying, prefer a **CDN + gzip/brotli** host (Vercel, Netlify, Cloudflare Pages) and enable HTTP/2 or HTTP/3.
+
+### 5. Structured data
+
+On public pages, include [schema.org](https://schema.org) JSON-LD (e.g. `SoftwareApplication`, `FAQPage`, `BreadcrumbList`) inside `<Head>` to unlock rich results in Google search.
+
+### 6. Canonical URLs & i18n
+
+- Set `<link rel="canonical" href="https://yourdomain.com/path" />` per route to avoid duplicate-content penalties.
+- If you localize the app, add `hreflang` tags for each supported language.
+
+### 7. Mobile app store ASO
+
+For the **App Store** and **Google Play**, optimize the store listing (title, subtitle, keywords field, screenshots, promotional text). Mirror the web keywords list above for consistent discoverability across web and mobile.
 
 ## Security Notes
 
