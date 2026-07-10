@@ -294,15 +294,18 @@ const Statistics = () => {
           </View>
         </View>
 
+        {loading ? (
+          // Single loader for the whole statistics screen while data loads.
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <MyTxt fontSize={14} color={Colors.neutral350} style={{ marginTop: 10 }}>
+              Loading data...
+            </MyTxt>
+          </View>
+        ) : (
+          <>
         <View style={styles.chartContainer}>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={Colors.primary} />
-              <MyTxt fontSize={14} color={Colors.neutral350} style={{ marginTop: 10 }}>
-                Loading data...
-              </MyTxt>
-            </View>
-          ) : chartData.length > 0 ? (
+          {chartData.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <BarChart
                 data={chartData}
@@ -331,10 +334,12 @@ const Statistics = () => {
 
         <TransactionList
           data={transactions}
-          loading={loading}
+          loading={false}
           emptyListMsg="No Transaction added yet!"
           title="Recent Transactions"
         />
+          </>
+        )}
       </ScrollView>
     </View>
   );
