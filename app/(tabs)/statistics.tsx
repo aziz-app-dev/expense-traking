@@ -6,12 +6,17 @@ import { AppSizes } from "@/constants/sizes";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/context/auth_context";
 import useFeatchData from "@/hooks/use_featch_data";
-import { generateForecast, generateReport, ReportPeriod } from "@/services/ai_services";
+import {
+  ForecastBucket,
+  generateForecast,
+  generateReport,
+  ReportPeriod,
+} from "@/services/ai_services";
 import { orderBy, where } from "@firebase/firestore";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -26,6 +31,38 @@ import { BarChart } from "react-native-gifted-charts";
 const PERIOD_LABELS: ReportPeriod[] = ["Weekly", "Monthly", "Yearly"];
 const PERIOD_PARAMS = ["week", "month", "year"] as const;
 
+// Render the AI text with each "Heading:" label bolded.
+const renderReportBody = (text: string) =>
+  text.split("\n").map((raw, i) => {
+    // Strip any stray markdown the model may add.
+    const line = raw.replace(/\*\*/g, "").replace(/^#+\s*/, "").trim();
+    if (!line) return <View key={i} style={{ height: 6 }} />;
+
+    const idx = line.indexOf(":");
+    const heading = idx > 0 ? line.slice(0, idx) : "";
+    const isHeading = idx > 0 && idx <= 22 && /^[A-Za-z][A-Za-z ]*$/.test(heading);
+
+    return (
+      <MyTxt
+        key={i}
+        fontSize={15}
+        color={Colors.textLighter}
+        style={{ lineHeight: 23, marginBottom: 8 }}
+      >
+        {isHeading ? (
+          <>
+            <MyTxt fontSize={15} fontWeight="700" color={Colors.white}>
+              {heading}:
+            </MyTxt>
+            {" " + line.slice(idx + 1).trim()}
+          </>
+        ) : (
+          line
+        )}
+      </MyTxt>
+    );
+  });
+
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -35,6 +72,18 @@ const getDateFromTransaction = (date: any): Date => {
   if (date instanceof Date) return date;
   return new Date(date);
 };
+
+// Fingerprint of the data an AI call depends on. If it's unchanged, we reuse
+// the cached result instead of calling the API again.
+const signatureOf = (txns: TransactionType[]) =>
+  `${txns.length}#` +
+  txns
+    .map((t) => {
+      const d: any = t.date;
+      const stamp = d?.seconds ?? d ?? "";
+      return `${t.id}|${t.amount}|${t.type}|${stamp}`;
+    })
+    .join(",");
 
 const Statistics = () => {
   const { user } = useAuth();
@@ -284,29 +333,113 @@ const Statistics = () => {
   const [reportText, setReportText] = useState("");
   const [reportError, setReportError] = useState("");
   const [reportKind, setReportKind] = useState<"report" | "forecast">("report");
+  const [forecastHistory, setForecastHistory] = useState<ForecastBucket[]>([]);
+  const [forecastPrediction, setForecastPrediction] = useState<{
+    income: number;
+    expense: number;
+    net: number;
+  } | null>(null);
+
+  // Cache of previous AI results keyed by kind + period + data signature, so an
+  // unchanged dataset reuses the last result instead of calling the API again.
+  const aiCache = useRef<
+    Map<
+      string,
+      {
+        report: string;
+        history: ForecastBucket[];
+        prediction: { income: number; expense: number; net: number } | null;
+      }
+    >
+  >(new Map());
+
+  const applyResult = (r: {
+    report: string;
+    history: ForecastBucket[];
+    prediction: { income: number; expense: number; net: number } | null;
+  }) => {
+    setReportText(r.report);
+    setForecastHistory(r.history);
+    setForecastPrediction(r.prediction);
+    setReportError("");
+  };
 
   const runAi = async (kind: "report" | "forecast") => {
+    // Forecast uses the full history; the report focuses on the selected period.
+    const sourceTxns = kind === "forecast" ? transactions : periodTransactions;
+    const cacheKey = `${kind}:${PERIOD_LABELS[tabIndex]}:${signatureOf(sourceTxns)}`;
+
     console.log(
       `[AI] runAi → kind: ${kind}, period: ${PERIOD_LABELS[tabIndex]}, ` +
         `periodTxns: ${periodTransactions.length}, allTxns: ${transactions.length}`
     );
+
     setReportKind(kind);
     setReportVisible(true);
+
+    // Cache hit → reuse previous result, no API call.
+    const cached = aiCache.current.get(cacheKey);
+    if (cached) {
+      console.log("[AI] cache hit — reusing previous result (no API call)");
+      setReportLoading(false);
+      applyResult(cached);
+      return;
+    }
+
     setReportLoading(true);
     setReportText("");
     setReportError("");
-    // Forecast uses the full history; the report focuses on the selected period.
+    setForecastHistory([]);
+    setForecastPrediction(null);
+
     const res =
       kind === "forecast"
         ? await generateForecast(PERIOD_LABELS[tabIndex], transactions)
         : await generateReport(PERIOD_LABELS[tabIndex], periodTransactions);
+
     if (res.success && res.report) {
-      setReportText(res.report);
+      const result = {
+        report: res.report,
+        history: (res as any).history ?? [],
+        prediction: (res as any).prediction ?? null,
+      };
+      aiCache.current.set(cacheKey, result);
+      applyResult(result);
     } else {
       setReportError(res.msg || "Could not generate the result.");
     }
     setReportLoading(false);
   };
+
+  // Bar-chart data for the forecast: recent buckets + the predicted "Next" one.
+  const forecastChartData = useMemo(() => {
+    if (!forecastHistory.length) return [];
+    const buckets: (ForecastBucket & { predicted?: boolean })[] =
+      forecastHistory.slice(-4).map((b) => ({ ...b }));
+    if (forecastPrediction) {
+      buckets.push({
+        label: "Next",
+        income: forecastPrediction.income,
+        expense: forecastPrediction.expense,
+        predicted: true,
+      });
+    }
+    const data: any[] = [];
+    buckets.forEach((b) => {
+      data.push({
+        value: b.income,
+        label: b.label,
+        labelWidth: 44,
+        spacing: 4,
+        frontColor: b.predicted ? Colors.primaryLight : Colors.primary,
+      });
+      data.push({
+        value: b.expense,
+        frontColor: b.predicted ? Colors.roseOverlay : Colors.rose,
+      });
+    });
+    return data;
+  }, [forecastHistory, forecastPrediction]);
 
   const getBarWidth = () => {
     return tabIndex === 2 ? 15 : 25;
@@ -503,9 +636,42 @@ const Statistics = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20 }}
             >
-              <MyTxt fontSize={15} color={Colors.textLighter} style={{ lineHeight: 23 }}>
-                {reportText}
-              </MyTxt>
+              {reportKind === "forecast" && forecastChartData.length > 0 && (
+                <View style={styles.forecastChartBox}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <BarChart
+                      data={forecastChartData}
+                      barWidth={14}
+                      spacing={22}
+                      barBorderRadius={4}
+                      hideRules
+                      yAxisThickness={0}
+                      xAxisThickness={0}
+                      yAxisLabelWidth={0}
+                      hideYAxisText
+                      xAxisLabelTextStyle={{ color: Colors.neutral350, fontSize: 10 }}
+                      noOfSections={3}
+                      minHeight={3}
+                      isAnimated
+                    />
+                  </ScrollView>
+                  <View style={styles.legendRow}>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
+                      <MyTxt fontSize={11} color={Colors.neutral350}>Income</MyTxt>
+                    </View>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendDot, { backgroundColor: Colors.rose }]} />
+                      <MyTxt fontSize={11} color={Colors.neutral350}>Expense</MyTxt>
+                    </View>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendDot, { backgroundColor: Colors.primaryLight }]} />
+                      <MyTxt fontSize={11} color={Colors.neutral350}>Forecast (Next)</MyTxt>
+                    </View>
+                  </View>
+                </View>
+              )}
+              {renderReportBody(reportText)}
             </ScrollView>
           )}
         </View>
@@ -625,6 +791,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 40,
+  },
+  forecastChartBox: {
+    backgroundColor: Colors.neutral800,
+    borderRadius: AppSizes.borderRadius,
+    padding: 14,
+    marginBottom: 16,
+    gap: 12,
+  },
+  legendRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 16,
   },
 });
 

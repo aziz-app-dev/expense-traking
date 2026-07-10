@@ -8,6 +8,13 @@ export type ReportPeriod = "Weekly" | "Monthly" | "Yearly";
 
 type AiResult = { success: boolean; report?: string; msg?: string };
 
+export type ForecastBucket = { label: string; income: number; expense: number };
+
+export type ForecastResult = AiResult & {
+  history?: ForecastBucket[];
+  prediction?: { income: number; expense: number; net: number };
+};
+
 const catLabel = (type?: string, cat?: string) => {
   const categories = type === "income" ? incomeCategories : expenseCategories;
   return categories[cat ?? "others"]?.label ?? cat ?? "Others";
@@ -24,7 +31,8 @@ const getDate = (date: any): Date => {
 // Shared Groq chat-completion call.
 const callGroq = async (
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  opts?: { json?: boolean }
 ): Promise<AiResult> => {
   const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY?.trim();
 
@@ -62,6 +70,7 @@ const callGroq = async (
         ],
         temperature: 0.5,
         max_tokens: 500,
+        ...(opts?.json ? { response_format: { type: "json_object" } } : {}),
       }),
     });
 
@@ -216,7 +225,7 @@ export const generateReport = async (
 export const generateForecast = async (
   period: ReportPeriod,
   transactions: TransactionType[]
-): Promise<AiResult> => {
+): Promise<ForecastResult> => {
   console.log(
     `[AI] generateForecast → period: ${period}, transactions: ${transactions?.length ?? 0}`
   );
@@ -233,29 +242,67 @@ export const generateForecast = async (
   const unit =
     period === "Weekly" ? "week" : period === "Monthly" ? "month" : "year";
 
-  const lines = history
+  // Compact numeric history for both the model and the chart.
+  const chartHistory: ForecastBucket[] = history.map((b) => ({
+    label: b.label,
+    income: Math.round(b.income),
+    expense: Math.round(b.expense),
+  }));
+
+  const lines = chartHistory
     .map(
       (b) =>
-        `- ${b.label}: income Rs. ${b.income.toLocaleString()}, expense Rs. ${b.expense.toLocaleString()}, net Rs. ${(
-          b.income - b.expense
-        ).toLocaleString()}`
+        `- ${b.label}: income ${b.income}, expense ${b.expense}, net ${b.income - b.expense}`
     )
     .join("\n");
 
   const prompt =
     `You are a financial forecasting assistant. Below is the user's recent per-${unit} ` +
-    `history (oldest first, amounts in Pakistani Rupees, "Rs."):\n\n${lines}\n\n` +
-    `Based on these trends, forecast the UPCOMING ${unit}. Use these exact headings:\n` +
-    `Predicted Income: a single Rs. estimate.\n` +
-    `Predicted Expense: a single Rs. estimate.\n` +
-    `Predicted Net: a single Rs. estimate (income minus expense).\n` +
-    `Trend: 1-2 sentences on the direction (rising, falling or steady) with reasoning from the data.\n` +
-    `Watch Out: 1-2 potential overspending risks.\n` +
-    `Advice: 2 short tips to improve next ${unit}.\n\n` +
-    `Base estimates on the trend of the numbers above. Keep it under 170 words. Do not use markdown symbols like # or *.`;
+    `history (oldest first, amounts are plain numbers in Pakistani Rupees):\n\n${lines}\n\n` +
+    `Based on these trends, forecast the UPCOMING ${unit}. Respond with ONLY a JSON object ` +
+    `with these exact keys:\n` +
+    `"predictedIncome": number (plain number, no commas),\n` +
+    `"predictedExpense": number (plain number, no commas),\n` +
+    `"trend": string (1-2 sentences on the direction with reasoning from the data),\n` +
+    `"watchOut": string (1-2 potential overspending risks),\n` +
+    `"advice": string (2 short tips to improve next ${unit}).\n` +
+    `Base the numeric estimates on the trend of the numbers above.`;
 
-  return callGroq(
-    "You are a careful financial forecasting assistant. Base every prediction on the historical numbers provided and explain your reasoning briefly.",
-    prompt
+  const res = await callGroq(
+    "You are a careful financial forecasting assistant that replies only with valid JSON. Base every prediction on the historical numbers provided.",
+    prompt,
+    { json: true }
   );
+
+  if (!res.success || !res.report) {
+    return { success: false, msg: res.msg, history: chartHistory };
+  }
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(res.report);
+  } catch {
+    console.log("[AI] forecast JSON parse failed:", res.report);
+    // Still show the raw text and the history chart.
+    return { success: true, report: res.report, history: chartHistory };
+  }
+
+  const income = Math.max(0, Math.round(Number(parsed.predictedIncome) || 0));
+  const expense = Math.max(0, Math.round(Number(parsed.predictedExpense) || 0));
+  const net = income - expense;
+
+  const report =
+    `Predicted Income: Rs. ${income.toLocaleString()}\n` +
+    `Predicted Expense: Rs. ${expense.toLocaleString()}\n` +
+    `Predicted Net: Rs. ${net.toLocaleString()}\n` +
+    `Trend: ${parsed.trend ?? "—"}\n` +
+    `Watch Out: ${parsed.watchOut ?? "—"}\n` +
+    `Advice: ${parsed.advice ?? "—"}`;
+
+  return {
+    success: true,
+    report,
+    history: chartHistory,
+    prediction: { income, expense, net },
+  };
 };
