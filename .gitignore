@@ -46,3 +46,23 @@ app-example
 # generated native folders
 /ios
 /android
+
+# IDE / editor
+.idea/
+*.swp
+*.swo
+
+# logs
+*.log
+logs/
+
+# test coverage
+coverage/
+
+# OS files
+Thumbs.db
+ehthumbs.db
+
+# temp
+*.tmp
+.tmp/
