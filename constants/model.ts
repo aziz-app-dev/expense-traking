@@ -23,6 +23,7 @@ export type TransactionListType = {
   title?: string;
   loading?: boolean;
   emptyListMsg?: string;
+  onViewAll?: () => void;
 };
 export type TransactionType = {
   id?: string;

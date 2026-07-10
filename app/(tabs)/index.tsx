@@ -24,7 +24,10 @@ export default function HomeScreen() {
     loading,
     error,
   } = useFeatchData<WalletType>("transaction", constraints);
-console.log(recentTransaction);
+
+  // Home only previews the 7 most recent; full history lives on the
+  // "All Transactions" screen (with search + filter).
+  const latestSeven = recentTransaction?.slice(0, 7) ?? [];
 
   return (
     <View style={styles.mainContainer}>
@@ -53,10 +56,15 @@ console.log(recentTransaction);
         <HomeCard />
         <MySpacer height={20} />
         <TransactionList
-          data={recentTransaction}
+          data={latestSeven}
           loading={loading}
           emptyListMsg="No Transaction added yet!"
           title="Recent Transactions"
+          onViewAll={
+            recentTransaction && recentTransaction.length > 0
+              ? () => router.push("/all_transactions")
+              : undefined
+          }
         />
          <MySpacer height={80} />
       </ScrollView>

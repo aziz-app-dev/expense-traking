@@ -33,6 +33,7 @@ export default function RootLayout() {
             />
             <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="all_transactions" options={{ headerShown: false }} />
             <Stack.Screen name="(modals)/profile_modal" options={{ presentation: "transparentModal", headerShown: false, animation: "fade" }} />
             <Stack.Screen name="(modals)/wallet_modal" options={{ presentation: "transparentModal", headerShown: false, animation: "fade" }} />
             <Stack.Screen name="(modals)/transaction_modal" options={{ presentation: "transparentModal", headerShown: false, animation: "fade" }} />

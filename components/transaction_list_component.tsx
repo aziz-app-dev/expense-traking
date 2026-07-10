@@ -17,13 +17,23 @@ const TransactionList = ({
   loading,
   title,
   emptyListMsg,
+  onViewAll,
 }: TransactionListType) => {
   const handelClick = () => {};
   return (
     <View style={styles.continer}>
-      <MyTxt fontWeight={"600"} fontSize={20} color={Colors.white}>
-        {title}
-      </MyTxt>
+      <View style={styles.titleRow}>
+        <MyTxt fontWeight={"600"} fontSize={20} color={Colors.white}>
+          {title}
+        </MyTxt>
+        {onViewAll && (
+          <TouchableOpacity onPress={onViewAll} hitSlop={10}>
+            <MyTxt fontWeight={"600"} fontSize={14} color={Colors.primary}>
+              View all
+            </MyTxt>
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.list}>
         <FlashList
           data={data}
@@ -139,6 +149,11 @@ export default TransactionList;
 const styles = StyleSheet.create({
   continer: {
     gap: 17,
+  },
+  titleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   list: {
     minHeight: 3,
