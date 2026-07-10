@@ -26,12 +26,28 @@ const callGroq = async (
   systemPrompt: string,
   userPrompt: string
 ): Promise<AiResult> => {
-  const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
+  const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY?.trim();
+
+  // Log key presence (masked) — helps diagnose env-loading issues on device.
+  console.log(
+    `[AI] callGroq → key present: ${!!apiKey}, length: ${apiKey?.length ?? 0}, ` +
+      `prefix: ${apiKey ? apiKey.slice(0, 4) : "n/a"}`
+  );
+
   if (!apiKey) {
-    return { success: false, msg: "AI key is not configured." };
+    console.log(
+      "[AI] EXPO_PUBLIC_GROQ_API_KEY is missing at runtime. " +
+        "Add it to .env and restart the dev server with a cleared cache: npx expo start -c"
+    );
+    return {
+      success: false,
+      msg: "AI key not loaded. Restart the app with: npx expo start -c",
+    };
   }
 
   try {
+    console.log(`[AI] POST ${GROQ_API_URL} (model: ${GROQ_MODEL})`);
+    const startedAt = Date.now();
     const response = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
@@ -49,9 +65,13 @@ const callGroq = async (
       }),
     });
 
+    console.log(
+      `[AI] response status: ${response.status} (${Date.now() - startedAt}ms)`
+    );
+
     if (!response.ok) {
       const errText = await response.text();
-      console.log("Groq API error:", response.status, errText);
+      console.log("[AI] Groq API error body:", errText);
       return {
         success: false,
         msg: `AI request failed (${response.status}). Please try again.`,
@@ -60,12 +80,16 @@ const callGroq = async (
 
     const json = await response.json();
     const report = json?.choices?.[0]?.message?.content?.trim();
+    console.log(
+      `[AI] success. tokens: ${json?.usage?.total_tokens ?? "?"}, ` +
+        `chars: ${report?.length ?? 0}`
+    );
     if (!report) {
       return { success: false, msg: "AI returned an empty response." };
     }
     return { success: true, report };
   } catch (error: any) {
-    console.log("callGroq error:", error);
+    console.log("[AI] callGroq network/exception error:", error?.message, error);
     return {
       success: false,
       msg: error?.message || "Could not reach the AI service.",
@@ -161,6 +185,9 @@ export const generateReport = async (
   period: ReportPeriod,
   transactions: TransactionType[]
 ): Promise<AiResult> => {
+  console.log(
+    `[AI] generateReport → period: ${period}, transactions: ${transactions?.length ?? 0}`
+  );
   if (!transactions || transactions.length === 0) {
     return {
       success: false,
@@ -190,6 +217,9 @@ export const generateForecast = async (
   period: ReportPeriod,
   transactions: TransactionType[]
 ): Promise<AiResult> => {
+  console.log(
+    `[AI] generateForecast → period: ${period}, transactions: ${transactions?.length ?? 0}`
+  );
   if (!transactions || transactions.length === 0) {
     return { success: false, msg: "Not enough history to forecast yet." };
   }

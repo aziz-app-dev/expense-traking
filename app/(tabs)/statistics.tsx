@@ -286,6 +286,10 @@ const Statistics = () => {
   const [reportKind, setReportKind] = useState<"report" | "forecast">("report");
 
   const runAi = async (kind: "report" | "forecast") => {
+    console.log(
+      `[AI] runAi → kind: ${kind}, period: ${PERIOD_LABELS[tabIndex]}, ` +
+        `periodTxns: ${periodTransactions.length}, allTxns: ${transactions.length}`
+    );
     setReportKind(kind);
     setReportVisible(true);
     setReportLoading(true);
