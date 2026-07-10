@@ -9,7 +9,14 @@ import { useAuth } from "@/context/auth_context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -41,14 +48,12 @@ const Register = () => {
     setIsLoading(true);
     try {
       const res = await register(email, password, name);
-      if (!res.success) {
+      if (res.success) {
+        // Account created — send the user to sign in manually.
+        router.replace("/(auth)/login");
+      } else {
         alert(res.message);
       }
-      // if (res.success) {
-      //   router.push("/(auth)/login");
-      // } else {
-      //   alert(res.message);
-      // }
     } catch (error: any) {
       console.log("Register error:", error);
       alert(error.message || "Something went wrong");
@@ -58,10 +63,18 @@ const Register = () => {
   };
 
   return (
-    <View style={styles.mainContianer}>
-      <BackBtn onPress={() => router.back()} />
-      <MySpacer height={20} />
-      <View style={{ gap: 5 }}>
+    <KeyboardAvoidingView
+      style={styles.mainContianer}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <BackBtn onPress={() => router.back()} />
+        <MySpacer height={20} />
+        <View style={{ gap: 5 }}>
         {/* !Greeting */}
         <MyTxt
           color={Colors.white}
@@ -149,8 +162,9 @@ const Register = () => {
             </MyTxt>
           </Pressable>
         </View>
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -158,7 +172,10 @@ const styles = StyleSheet.create({
   mainContianer: {
     flex: 1,
     backgroundColor: Colors.black,
-   padding: AppSizes.bodyPadding,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: AppSizes.bodyPadding,
   },
   footerTxt: {
     flexDirection: "row",
