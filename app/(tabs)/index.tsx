@@ -1,4 +1,5 @@
 import HomeCard from "@/components/home_card_component";
+import IncomeIdeas from "@/components/income_ideas";
 import MySpacer from "@/components/spcer_componet";
 import TransactionList from "@/components/transaction_list_component";
 import MyTxt from "@/components/txt_components";
@@ -22,12 +23,19 @@ export default function HomeScreen() {
   const {
     data: recentTransaction,
     loading,
-    error,
   } = useFeatchData<WalletType>("transaction", constraints);
 
   // Home only previews the 7 most recent; full history lives on the
   // "All Transactions" screen (with search + filter).
   const latestSeven = recentTransaction?.slice(0, 7) ?? [];
+
+  // Recorded income used as loose context for AI income suggestions.
+  const homeIncome =
+    recentTransaction?.reduce(
+      (sum: number, t: any) =>
+        t.type === "income" ? sum + (Number(t.amount) || 0) : sum,
+      0
+    ) ?? 0;
 
   return (
     <View style={styles.mainContainer}>
@@ -54,6 +62,8 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <HomeCard />
+        <MySpacer height={20} />
+        <IncomeIdeas totalIncome={homeIncome} />
         <MySpacer height={20} />
         <TransactionList
           data={latestSeven}
