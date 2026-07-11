@@ -75,6 +75,13 @@ const AllTransactions = () => {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>(
     (params.period as PeriodFilter) || "all"
   );
+  // Filters are hidden behind the filter icon; open them if we arrived
+  // pre-filtered (e.g. "View all" from the statistics screen).
+  const [showFilters, setShowFilters] = useState<boolean>(
+    !!(params.period || params.type)
+  );
+
+  const hasActiveFilters = typeFilter !== "all" || periodFilter !== "all";
 
   const constraints = user?.uid
     ? [where("uid", "==", user.uid), orderBy("date", "desc")]
@@ -148,22 +155,49 @@ const AllTransactions = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Search */}
-      <MyInput
-        placeholder="Search by description, category, amount..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        leftIcon={<Ionicons name="search" size={20} color={Colors.neutral400} />}
-        rightIcon={
-          searchQuery.length > 0 ? (
-            <Pressable onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color={Colors.neutral400} />
-            </Pressable>
-          ) : undefined
-        }
-      />
+      {/* Search + filter toggle */}
+      <View style={styles.searchRow}>
+        <View style={{ flex: 1 }}>
+          <MyInput
+            placeholder="Search by description, category, amount..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            marginVertical={0}
+            leftIcon={
+              <Ionicons name="search" size={20} color={Colors.neutral400} />
+            }
+            rightIcon={
+              searchQuery.length > 0 ? (
+                <Pressable onPress={() => setSearchQuery("")}>
+                  <Ionicons
+                    name="close-circle"
+                    size={20}
+                    color={Colors.neutral400}
+                  />
+                </Pressable>
+              ) : undefined
+            }
+          />
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.filterIconBtn,
+            showFilters && styles.filterIconBtnActive,
+          ]}
+          onPress={() => setShowFilters((p) => !p)}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name="options-outline"
+            size={22}
+            color={showFilters ? Colors.black : Colors.white}
+          />
+          {hasActiveFilters && !showFilters && <View style={styles.filterDot} />}
+        </TouchableOpacity>
+      </View>
 
       {/* Filters */}
+      {showFilters && (
       <View style={styles.filtersBlock}>
         <ScrollView
           horizontal
@@ -215,6 +249,7 @@ const AllTransactions = () => {
           })}
         </ScrollView>
       </View>
+      )}
 
       {/* Results */}
       <View style={styles.resultsContainer}>
@@ -297,6 +332,36 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  filterIconBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: Colors.neutral500,
+    backgroundColor: Colors.neutral800,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filterIconBtnActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  filterDot: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.neutral900,
   },
   filtersBlock: {
     gap: 8,
