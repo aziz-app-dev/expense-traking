@@ -9,14 +9,17 @@ import useFeatchData from "@/hooks/use_featch_data";
 import {
   ForecastBucket,
   generateForecast,
+  generateIncomeSuggestions,
   generateReport,
+  INDUSTRIES,
   ReportPeriod,
 } from "@/services/ai_services";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { orderBy, where } from "@firebase/firestore";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -441,6 +444,61 @@ const Statistics = () => {
     return data;
   }, [forecastHistory, forecastPrediction]);
 
+  // Total recorded income — passed to the AI as loose context for suggestions.
+  const totalIncome = useMemo(
+    () =>
+      transactions.reduce(
+        (sum, t) => (t.type === "income" ? sum + (Number(t.amount) || 0) : sum),
+        0
+      ),
+    [transactions]
+  );
+
+  // ---- AI Income Ideas ----
+  const [incomeVisible, setIncomeVisible] = useState(false);
+  const [incomeLoading, setIncomeLoading] = useState(false);
+  const [incomeText, setIncomeText] = useState("");
+  const [incomeError, setIncomeError] = useState("");
+  const [industry, setIndustry] = useState<string>("");
+  const incomeCache = useRef<Map<string, string>>(new Map());
+
+  // Remember the user's chosen field across app launches.
+  useEffect(() => {
+    AsyncStorage.getItem("preferred_industry").then((saved) => {
+      if (saved) setIndustry(saved);
+    });
+  }, []);
+
+  const selectIndustry = (value: string) => {
+    setIndustry(value);
+    AsyncStorage.setItem("preferred_industry", value).catch(() => {});
+  };
+
+  const handleIncomeIdeas = async () => {
+    if (!industry) return;
+    const cacheKey = `${industry}#${Math.round(totalIncome / 1000)}`;
+    setIncomeLoading(true);
+    setIncomeText("");
+    setIncomeError("");
+
+    const cached = incomeCache.current.get(cacheKey);
+    if (cached) {
+      console.log("[AI] income ideas cache hit — reusing previous result");
+      setIncomeText(cached);
+      setIncomeLoading(false);
+      return;
+    }
+
+    const res = await generateIncomeSuggestions(industry, totalIncome);
+    if (res.success && res.report) {
+      incomeCache.current.set(cacheKey, res.report);
+      setIncomeText(res.report);
+    } else {
+      setIncomeError(res.msg || "Could not generate suggestions.");
+    }
+    setIncomeLoading(false);
+  };
+
   const getBarWidth = () => {
     return tabIndex === 2 ? 15 : 25;
   };
@@ -559,6 +617,17 @@ const Statistics = () => {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity
+          style={styles.incomeButton}
+          activeOpacity={0.85}
+          onPress={() => setIncomeVisible(true)}
+        >
+          <Ionicons name="bulb" size={17} color={Colors.primary} />
+          <MyTxt fontSize={14} fontWeight="700" color={Colors.white}>
+            How to Grow My Income
+          </MyTxt>
+        </TouchableOpacity>
+
         <TransactionList
           data={latestPeriodTransactions}
           loading={false}
@@ -676,6 +745,98 @@ const Statistics = () => {
           )}
         </View>
       </Modal>
+
+      {/* Income Ideas Modal */}
+      <Modal
+        visible={incomeVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIncomeVisible(false)}
+      >
+        <Pressable
+          style={styles.reportBackdrop}
+          onPress={() => setIncomeVisible(false)}
+        />
+        <View style={styles.reportSheet}>
+          <View style={styles.reportHeader}>
+            <View style={styles.reportTitle}>
+              <Ionicons name="bulb" size={20} color={Colors.primary} />
+              <MyTxt fontSize={18} fontWeight="700">
+                Grow My Income
+              </MyTxt>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIncomeVisible(false)}
+              hitSlop={10}
+            >
+              <Ionicons name="close" size={24} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ gap: 14, paddingBottom: 20 }}
+          >
+            <MyTxt fontSize={13} color={Colors.neutral350}>
+              Pick your field to get personalized ideas for earning more.
+            </MyTxt>
+
+            {/* Industry preference chips */}
+            <View style={styles.industryCloud}>
+              {INDUSTRIES.map((item) => {
+                const active = industry === item;
+                return (
+                  <TouchableOpacity
+                    key={item}
+                    onPress={() => selectIndustry(item)}
+                    style={[styles.chip, active && styles.chipActive]}
+                  >
+                    <MyTxt
+                      fontSize={12}
+                      fontWeight="600"
+                      color={active ? Colors.black : Colors.neutral300}
+                    >
+                      {item}
+                    </MyTxt>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.aiButton, (!industry || incomeLoading) && { opacity: 0.5 }]}
+              activeOpacity={0.85}
+              disabled={!industry || incomeLoading}
+              onPress={handleIncomeIdeas}
+            >
+              <Ionicons name="sparkles" size={16} color={Colors.black} />
+              <MyTxt fontSize={14} fontWeight="700" color={Colors.black}>
+                Get Income Ideas
+              </MyTxt>
+            </TouchableOpacity>
+
+            {incomeLoading ? (
+              <View style={styles.reportLoading}>
+                <ActivityIndicator size="large" color={Colors.primary} />
+                <MyTxt fontSize={14} color={Colors.neutral350} style={{ marginTop: 10 }}>
+                  Finding ways to grow your income...
+                </MyTxt>
+              </View>
+            ) : incomeError ? (
+              <MyTxt
+                fontSize={14}
+                color={Colors.rose}
+                align="center"
+                style={{ paddingVertical: 16 }}
+              >
+                {incomeError}
+              </MyTxt>
+            ) : incomeText ? (
+              renderReportBody(incomeText)
+            ) : null}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -760,6 +921,34 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.primary,
     backgroundColor: Colors.neutral800,
+  },
+  incomeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: AppSizes.borderRadius,
+    borderWidth: 1.5,
+    borderColor: Colors.neutral700,
+    backgroundColor: Colors.neutral800,
+  },
+  industryCloud: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: Colors.neutral800,
+    borderWidth: 1,
+    borderColor: Colors.neutral700,
+  },
+  chipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   reportBackdrop: {
     ...StyleSheet.absoluteFillObject,

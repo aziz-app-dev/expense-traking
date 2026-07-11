@@ -190,6 +190,58 @@ const buildHistory = (
   return buckets;
 };
 
+// Industries the user can pick a preference from for income suggestions.
+export const INDUSTRIES = [
+  "Software Development",
+  "UI/UX & Design",
+  "Digital Marketing",
+  "Freelancing / Gig Work",
+  "Content Creation",
+  "E-commerce",
+  "Teaching / Tutoring",
+  "Finance / Accounting",
+  "Healthcare",
+  "Sales / Business",
+  "Engineering",
+  "Other",
+];
+
+export const generateIncomeSuggestions = async (
+  industry: string,
+  monthlyIncome?: number
+): Promise<AiResult> => {
+  console.log(
+    `[AI] generateIncomeSuggestions → industry: ${industry}, income: ${monthlyIncome ?? "n/a"}`
+  );
+  if (!industry) {
+    return { success: false, msg: "Please choose your field first." };
+  }
+
+  const incomeContext =
+    monthlyIncome && monthlyIncome > 0
+      ? `The user's recent recorded income totals about Rs. ${Math.round(
+          monthlyIncome
+        ).toLocaleString()}.`
+      : `The user's current income is not known.`;
+
+  const prompt =
+    `You are a practical career and income-growth coach. The user's field of interest is: ` +
+    `${industry}. ${incomeContext}\n\n` +
+    `Give specific, realistic ideas to earn and grow income in this field (amounts in ` +
+    `Pakistani Rupees, "Rs."). Use these exact headings:\n` +
+    `Income Streams: 3-4 concrete ways to earn in this field (jobs, freelance, side projects).\n` +
+    `Skills to Learn: 2-3 high-value skills that increase earning potential.\n` +
+    `Quick Wins: 2 practical things to start this month.\n` +
+    `Earning Potential: a realistic monthly income range in Rs. for this field.\n\n` +
+    `Be concrete, encouraging and specific to the field. Keep it under 200 words. ` +
+    `Do not use markdown symbols like # or *.`;
+
+  return callGroq(
+    "You are a practical, encouraging career and income coach who gives realistic, actionable advice.",
+    prompt
+  );
+};
+
 export const generateReport = async (
   period: ReportPeriod,
   transactions: TransactionType[]
