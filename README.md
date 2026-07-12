@@ -1,116 +1,200 @@
-# Expense Tracking App — React Native + Expo Personal Finance Manager
+<div align="center">
 
-> Free, open-source **expense tracker** and **budgeting app** built with React Native, Expo Router, Firebase, and Cloudinary. Manage **multiple wallets**, log **income and expense transactions**, attach **receipt photos**, and visualize **weekly and monthly spending** with interactive charts — on **Android, iOS, and the Web**.
+<img src="./assets/images/icon.png" width="120" alt="Expense Tracker logo" />
 
-**Keywords:** expense tracker, budgeting app, personal finance, money manager, React Native, Expo, Firebase, Cloudinary, wallet app, receipt scanner, spending tracker, income tracker, financial dashboard, cross-platform mobile app, TypeScript.
+# 💸 Expense Tracker
 
-## Features
+### Your money, beautifully organized — powered by AI.
 
-- Email/password authentication (Firebase Auth)
-- Create and manage multiple wallets
-- Add, edit, and delete income/expense transactions
-- Upload transaction receipt images (Cloudinary)
-- Visualize weekly/monthly spending with charts
-- Persistent sessions on Web, Android and iOS
-- File-based routing with Expo Router
+A cross-platform personal-finance app to track **wallets**, log **income & expenses**, attach **receipts**, visualize **spending trends**, and get **AI-driven reports, forecasts, and income ideas** — on Android, iOS, and Web.
 
-## Tech Stack
+<br/>
 
-- [Expo](https://expo.dev) (SDK 54) + [Expo Router](https://docs.expo.dev/router/introduction)
-- [React Native](https://reactnative.dev) 0.81
-- [Firebase](https://firebase.google.com) (Auth + Firestore)
-- [Cloudinary](https://cloudinary.com) (image hosting)
-- TypeScript
+![Expo](https://img.shields.io/badge/Expo-SDK%2054-000020?style=for-the-badge&logo=expo&logoColor=white)
+![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Groq](https://img.shields.io/badge/AI-Groq%20LLaMA%203.3-F55036?style=for-the-badge&logo=meta&logoColor=white)
 
-## Prerequisites
+</div>
 
-- Node.js 18+
-- npm or yarn
-- A Firebase project (Auth + Firestore enabled)
-- A Cloudinary account with an unsigned upload preset
-- Expo Go app, or an Android emulator / iOS simulator
+---
 
-## Setup
+## ✨ Overview
 
-1. **Clone the repo**
+**Expense Tracker** is a modern money manager built with **React Native + Expo Router**. It uses **Firebase** for authentication and real-time data, **Cloudinary** for receipt image hosting, and **Groq's LLaMA 3.3** model to turn your raw transactions into plain-English insights — spending reports, spending forecasts (with charts), and personalized ways to grow your income.
 
-   ```bash
-   git clone <your-repo-url>
-   cd expense-traking
-   ```
+---
 
-2. **Install dependencies**
+## 📱 Features
 
-   ```bash
-   npm install
-   ```
+### 💼 Core
 
-3. **Configure environment variables**
+- 🔐 **Email / password auth** with Firebase — persistent sessions on Web, Android & iOS
+- 👛 **Multiple wallets** — create, edit, and delete, each with its own balance
+- 🔁 **Transactions** — add / edit / delete income & expenses, auto-updating wallet balances
+- 🧾 **Receipt photos** — attach an image to any transaction (Cloudinary CDN)
+- 📊 **Statistics** — Weekly / Monthly / Yearly bar charts of income vs. expense
+- 🔎 **All Transactions screen** — full history with **search** + **filters** (type & time period) behind a clean filter icon
 
-   Copy `.env.example` to `.env` and fill in your own credentials:
+### 🤖 AI-Powered (Groq · LLaMA 3.3)
 
-   ```bash
-   cp .env.example .env
-   ```
+- 📝 **AI Report** — a friendly summary of the selected period: overview, top spending, savings, and tips
+- 🔮 **AI Forecast** — predicts next week/month/year from your trends, shown as a **bar chart** (recent periods + predicted "Next") with a written breakdown
+- 💡 **Grow My Income** — pick your field (e.g. *Software Development*) and get tailored income streams, skills to learn, quick wins, and an earning range — your preference is **remembered** across launches
+- ⚡ **Smart caching** — unchanged data reuses the previous AI result instead of calling the API again
 
-   Required variables:
+### 🎨 Experience
 
-   | Variable | Where to get it |
-   |----------|-----------------|
-   | `EXPO_PUBLIC_FIREBASE_API_KEY` | Firebase console → Project settings → Your apps |
-   | `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase console |
-   | `EXPO_PUBLIC_FIREBASE_DATABASE_URL` | Firebase console |
-   | `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Firebase console |
-   | `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase console |
-   | `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase console |
-   | `EXPO_PUBLIC_FIREBASE_APP_ID` | Firebase console |
-   | `EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary dashboard |
-   | `EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Cloudinary → Settings → Upload → unsigned preset |
+- 🖌️ **Custom themed alert modal** app-wide (no default OS pop-ups)
+- 🧭 **File-based routing** with Expo Router + typed routes
+- 🌗 Dark, focused UI with reusable components and haptics
 
-   > **Note:** `EXPO_PUBLIC_*` variables are bundled into the client app. Do not put private server keys here. The `.env` file is git-ignored and must never be committed.
+---
 
-4. **Start the app**
+## 🖼️ Screenshots
 
-   ```bash
-   npx expo start
-   ```
+> _Add your screenshots to `assets/screenshots/` and drop them in below._
 
-   Then choose one of:
+| Home | Statistics | AI Forecast | Income Ideas |
+|:---:|:---:|:---:|:---:|
+| _coming soon_ | _coming soon_ | _coming soon_ | _coming soon_ |
 
-   - [Expo Go](https://expo.dev/go) (scan the QR code)
-   - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-   - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-   - Web browser
+---
 
-## Project Structure
+## 🛠️ Tech Stack
 
-```text
-app/           # Expo Router screens (auth, tabs, modals)
-components/    # Reusable UI components
-config/        # Firebase initialization
-constants/     # Theme, models, static data
-context/       # React context providers (auth, etc.)
-hooks/         # Custom hooks
-services/      # Firestore + Cloudinary API wrappers
-assets/        # Images and fonts
+| Layer | Technology |
+|---|---|
+| **Framework** | [Expo](https://expo.dev) SDK 54 · [Expo Router](https://docs.expo.dev/router/introduction) |
+| **UI** | [React Native](https://reactnative.dev) 0.81 · TypeScript |
+| **Auth & Data** | [Firebase](https://firebase.google.com) Auth + Firestore |
+| **Media** | [Cloudinary](https://cloudinary.com) (unsigned uploads) |
+| **AI** | [Groq](https://groq.com) — `llama-3.3-70b-versatile` |
+| **Charts** | [react-native-gifted-charts](https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts) |
+| **Lists** | [@shopify/flash-list](https://shopify.github.io/flash-list/) |
+| **Storage** | [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js 18+** and npm
+- A **Firebase** project (Auth + Firestore enabled)
+- A **Cloudinary** account with an unsigned upload preset
+- A free **Groq API key** — [console.groq.com/keys](https://console.groq.com/keys)
+- Expo Go, or an Android emulator / iOS simulator
+
+### Installation
+
+```bash
+# 1. Clone
+git clone <your-repo-url>
+cd expense-traking
+
+# 2. Install dependencies
+npm install
+
+# 3. Create your environment file
+cp .env.example .env      # then fill in your credentials (see below)
+
+# 4. Start the app
+npx expo start
 ```
 
-## Available Scripts
+Then open it in **Expo Go** (scan the QR), an **emulator/simulator**, or the **web** browser.
 
-- `npm start` – start the Expo dev server
-- `npm run android` – build and run on Android
-- `npm run ios` – build and run on iOS
-- `npm run web` – run in the browser
-- `npm run lint` – lint the project
-- `npm run reset-project` – reset to a blank `app/` directory
+> 💡 After changing `.env`, restart the bundler with a cleared cache so the new
+> values are picked up: `npx expo start -c`.
 
-## SEO (Web Build)
+---
 
-The Expo web target outputs a **static site** (`"output": "static"` in [app.json](app.json)), so the app can be indexed by search engines when deployed. Use the steps below to make the build **SEO-friendly**.
+## 🔑 Environment Variables
 
-### 1. Page metadata
+Copy `.env.example` → `.env` and fill in your own values:
 
-Expo Router supports per-route `<head>` tags via `expo-router/head`. Add a unique **title**, **meta description**, and **Open Graph / Twitter Card** tags on every top-level route so pages render with rich previews when shared on Google, LinkedIn, X, and Slack.
+| Variable | Where to get it |
+|---|---|
+| `EXPO_PUBLIC_FIREBASE_API_KEY` | Firebase console → Project settings → Your apps |
+| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase console |
+| `EXPO_PUBLIC_FIREBASE_DATABASE_URL` | Firebase console |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Firebase console |
+| `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase console |
+| `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase console |
+| `EXPO_PUBLIC_FIREBASE_APP_ID` | Firebase console |
+| `EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary dashboard |
+| `EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Cloudinary → Settings → Upload → unsigned preset |
+| `EXPO_PUBLIC_GROQ_API_KEY` | [Groq console → API Keys](https://console.groq.com/keys) |
+
+> ⚠️ `EXPO_PUBLIC_*` variables are **bundled into the client app** and can be
+> extracted from a shipped build. Don't put private server secrets here. For
+> production, proxy AI calls through a backend. `.env` is git-ignored and must
+> never be committed.
+
+---
+
+## 📂 Project Structure
+
+```text
+app/            # Expo Router screens
+ ├─ (auth)/     #   login, register, welcome
+ ├─ (tabs)/     #   home, statistics, wallet, profile
+ ├─ (modals)/   #   transaction, wallet, profile, search
+ └─ all_transactions.tsx   # full history + search & filters
+components/     # Reusable UI (custom_alert, income_ideas, charts, inputs…)
+config/         # Firebase initialization
+constants/      # Theme, models, categories, sizes
+context/        # Auth provider
+hooks/          # Custom hooks (useFetchData…)
+services/       # Firestore, Cloudinary & AI (Groq) wrappers
+scripts/        # Utilities (seed_test_data.js)
+assets/         # Images & fonts
+```
+
+---
+
+## 📜 Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm start` | Start the Expo dev server |
+| `npm run android` | Build & run on Android |
+| `npm run ios` | Build & run on iOS |
+| `npm run web` | Run in the browser |
+| `npm run lint` | Lint the project |
+| `npm run reset-project` | Reset to a blank `app/` directory |
+
+### 🌱 Seed demo data
+
+Populate a test account with sample wallets & transactions:
+
+```bash
+# loads .env, signs in (or creates) the tester account, seeds Firestore
+set -a && . ./.env && set +a && node scripts/seed_test_data.js
+```
+
+---
+
+## 🔒 Security Notes
+
+- Never commit `.env` — only `.env.example` is tracked.
+- Rotate any credentials that were ever pushed to a public repo.
+- Keep **Firestore Security Rules** strict — the client API key only identifies the project; rules are what protect your data.
+- Use **unsigned** Cloudinary presets on the client; never ship an API secret.
+- The Groq key is client-side (`EXPO_PUBLIC_`) — fine for demos, but proxy it via a backend for production.
+
+---
+
+<details>
+<summary><strong>🔍 SEO Guide (Expo Web build)</strong></summary>
+
+<br/>
+
+The Expo web target outputs a **static site** (`"output": "static"` in [app.json](app.json)), so it can be indexed by search engines when deployed.
+
+**1. Page metadata** — use `expo-router/head` for per-route `<title>`, meta description, and Open Graph / Twitter Card tags:
 
 ```tsx
 import Head from 'expo-router/head';
@@ -122,7 +206,6 @@ export default function Dashboard() {
         <title>Dashboard — Expense Tracker</title>
         <meta name="description" content="See your weekly and monthly spending at a glance." />
         <meta property="og:title" content="Expense Tracker — Personal Finance Dashboard" />
-        <meta property="og:description" content="Track income, expenses, and wallets across devices." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
@@ -132,46 +215,26 @@ export default function Dashboard() {
 }
 ```
 
-### 2. Semantic, crawlable content
+**2. Semantic content** — use real headings, `alt` text, and `accessibilityLabel` (helps screen readers **and** crawlers); render a public, keyword-rich landing route not gated behind auth.
 
-- Use headings (`<h1>`–`<h3>`) for landing-page content rather than styled `<Text>` only.
-- Provide `alt` text for images and `accessibilityLabel` for icon-only buttons — the same attributes help screen readers **and** crawlers.
-- Avoid blocking initial content behind authentication on marketing pages; render a **public landing route** with keyword-rich copy.
+**3. Site files** — add `public/robots.txt`, `public/sitemap.xml`, and `public/favicon.png`.
 
-### 3. Site-wide SEO files
+**4. Core Web Vitals** — this project already uses `expo-image` (caching, low CLS), Cloudinary CDN (better LCP), and FlashList (low INP). Deploy behind a CDN with brotli/gzip and HTTP/2+.
 
-Add the following to the `public/` directory so they are served at the site root:
+**5. Structured data** — add [schema.org](https://schema.org) JSON-LD (`SoftwareApplication`, `FAQPage`) inside `<Head>`.
 
-- `public/robots.txt` — allow indexing and point to your sitemap.
-- `public/sitemap.xml` — list every public route (generate at build time).
-- `public/favicon.png` — already configured in [app.json](app.json#L27).
+**6. Canonical & i18n** — set `<link rel="canonical">` per route and `hreflang` tags if localized.
 
-### 4. Performance & Core Web Vitals
+**7. App-store ASO** — optimize title, subtitle, keywords, and screenshots for Google Play / App Store.
 
-Google ranks on **Core Web Vitals** (LCP, INP, CLS). This project already helps by:
+</details>
 
-- Using `expo-image` with caching and automatic `contentFit` to minimize **CLS**.
-- Shipping static assets via Cloudinary (CDN-backed) to improve **LCP**.
-- Using `@shopify/flash-list` for virtualized lists to keep **INP** low.
+---
 
-When deploying, prefer a **CDN + gzip/brotli** host (Vercel, Netlify, Cloudflare Pages) and enable HTTP/2 or HTTP/3.
+<div align="center">
 
-### 5. Structured data
+Built with ❤️ using **React Native**, **Expo**, **Firebase** & **Groq AI**.
 
-On public pages, include [schema.org](https://schema.org) JSON-LD (e.g. `SoftwareApplication`, `FAQPage`, `BreadcrumbList`) inside `<Head>` to unlock rich results in Google search.
+⭐ Star this repo if you find it useful!
 
-### 6. Canonical URLs & i18n
-
-- Set `<link rel="canonical" href="https://yourdomain.com/path" />` per route to avoid duplicate-content penalties.
-- If you localize the app, add `hreflang` tags for each supported language.
-
-### 7. Mobile app store ASO
-
-For the **App Store** and **Google Play**, optimize the store listing (title, subtitle, keywords field, screenshots, promotional text). Mirror the web keywords list above for consistent discoverability across web and mobile.
-
-## Security Notes
-
-- Never commit your `.env` file; only `.env.example` is tracked.
-- Rotate any credentials that were previously pushed to a public repo.
-- Keep your Firebase Security Rules strict — the client-side API key only identifies the project; Firestore rules are what protect your data.
-- Use **unsigned** Cloudinary upload presets on the client; never ship an API secret in the app.
+</div>
