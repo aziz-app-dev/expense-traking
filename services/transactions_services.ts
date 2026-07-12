@@ -7,7 +7,7 @@ import {
   setDoc,
   updateDoc,
 } from "@firebase/firestore";
-import { Alert } from "react-native";
+import { showAlert } from "@/components/custom_alert";
 import { uploadImageToCloudinary } from "./cloudinary_services";
 
 import { db } from "../config/firebase";
@@ -25,7 +25,7 @@ export const createAndUpdateTransactions = async (
       const uploadedUrl = await uploadImageToCloudinary(transactionData.image);
 
       if (!uploadedUrl) {
-        Alert.alert("Error", "Image upload failed");
+        showAlert("Error", "Image upload failed");
         return {
           success: false,
           msg: "Image upload failed",

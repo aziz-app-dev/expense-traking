@@ -8,6 +8,7 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { CustomAlertHost } from "@/components/custom_alert";
 import { Colors } from "@/constants/theme";
 import { AuthProvider } from "@/context/auth_context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -39,6 +40,7 @@ export default function RootLayout() {
             <Stack.Screen name="(modals)/transaction_modal" options={{ presentation: "transparentModal", headerShown: false, animation: "fade" }} />
             <Stack.Screen name="(modals)/search_modal" options={{ presentation: "transparentModal", headerShown: false, animation: "fade" }} />
           </Stack>
+          <CustomAlertHost />
           <StatusBar style="light" backgroundColor={Colors.black} translucent={false} />
         </AuthProvider>
       </ThemeProvider>

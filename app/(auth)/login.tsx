@@ -5,6 +5,7 @@ import MySpacer from "@/components/spcer_componet";
 import MyTxt from "@/components/txt_components";
 import { AppSizes } from "@/constants/sizes";
 import { Colors } from "@/constants/theme";
+import { showAlert } from "@/components/custom_alert";
 import { useAuth } from "@/context/auth_context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -27,7 +28,7 @@ const Login = () => {
         password === ""
        
       ) {
-        alert("Please fill all the fields");
+        showAlert("Please fill all the fields");
         return;
       }
       setIsLoading(true);
@@ -36,11 +37,11 @@ const Login = () => {
         if (res.success) {
           router.replace("/(tabs)");
         } else {
-          alert(res.message);
+          showAlert(res.message);
         }
       } catch (error: any) {
         console.log("Register error:", error);
-        alert(error.message || "Something went wrong");
+        showAlert(error.message || "Something went wrong");
       } finally {
         setIsLoading(false);
       }

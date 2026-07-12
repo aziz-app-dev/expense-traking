@@ -19,7 +19,6 @@ import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Platform,
   Pressable,
@@ -29,6 +28,7 @@ import {
   View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
+import { showAlert } from "@/components/custom_alert";
 
 const TransactionModal = () => {
   type ParamsType = {
@@ -123,7 +123,7 @@ const TransactionModal = () => {
       !date ||
       !walletId
     ) {
-      Alert.alert("Transactions", "Please fill all the fields");
+      showAlert("Transactions", "Please fill all the fields");
       return;
     }
     console.log("Next");
@@ -148,7 +148,7 @@ const TransactionModal = () => {
     if (res.success) {
       router.back();
     } else {
-      Alert.alert("Transactions", res.msg);
+      showAlert("Transactions", res.msg);
     }
   };
 
@@ -161,11 +161,11 @@ const TransactionModal = () => {
       router.back();
     } else {
       setDelLoading(false);
-      Alert.alert("Wallet", res.msg);
+      showAlert("Wallet", res.msg);
     }
   };
   const showDeleteAlert = () => {
-    Alert.alert("Confirem", "Are Your sure?", [
+    showAlert("Confirm", "Are you sure you want to delete this transaction?", [
       {
         text: "cancle",
         onPress: () => {

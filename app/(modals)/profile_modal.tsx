@@ -6,6 +6,7 @@ import MyTxt from "@/components/txt_components";
 import { AppSizes } from "@/constants/sizes";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/context/auth_context";
+import { showAlert } from "@/components/custom_alert";
 import { uploadImageToCloudinary } from "@/services/cloudinary_services";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -13,7 +14,6 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 
 import {
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -41,7 +41,7 @@ const ProfileModal = () => {
     if (!user?.uid) return;
 
     if (!userData.name.trim()) {
-      Alert.alert("User", "Please fill all the fields");
+      showAlert("User", "Please fill all the fields");
       return;
     }
 
@@ -55,7 +55,7 @@ const ProfileModal = () => {
         const uploadedUrl = await uploadImageToCloudinary(userData.image);
 
         if (!uploadedUrl) {
-          Alert.alert("Error", "Image upload failed");
+          showAlert("Error", "Image upload failed");
           setLoading(false);
           return;
         }
@@ -69,14 +69,14 @@ const ProfileModal = () => {
       });
 
       if (res.success) {
-        Alert.alert("Success", "Profile updated successfully");
+        showAlert("Success", "Profile updated successfully");
         router.back();
       } else {
-        Alert.alert("Error", res.message || "Something went wrong");
+        showAlert("Error", res.message || "Something went wrong");
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Update failed");
+      showAlert("Error", "Update failed");
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 import { ResposeType, WalletType } from "@/constants/model";
 import { collection, deleteDoc, doc, setDoc } from "@firebase/firestore";
-import { Alert } from "react-native";
+import { showAlert } from "@/components/custom_alert";
 import { uploadImageToCloudinary } from "./cloudinary_services";
 
 import { db } from "../config/firebase";
@@ -14,7 +14,7 @@ export const createAndUpdateWallet = async (
       const uploadedUrl = await uploadImageToCloudinary(walletData.image);
 
       if (!uploadedUrl) {
-        Alert.alert("Error", "Image upload failed");
+        showAlert("Error", "Image upload failed");
         return {
           success: false,
           msg: "Image upload failed",

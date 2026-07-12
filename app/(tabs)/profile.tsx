@@ -8,7 +8,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Href, router } from "expo-router";
 import { signOut } from 'firebase/auth';
 import React from "react";
-import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
+import { Image, Pressable, StyleSheet, View } from "react-native";
+import { showAlert } from "@/components/custom_alert";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -66,8 +67,8 @@ const Profile = () => {
     await signOut(auth);
   }
   const showLogouAlert = () => {
-    Alert.alert("Confirm", "Are You sure you want ti logout?", [
-      { text: "Canecl", onPress: () => {} },
+    showAlert("Confirm", "Are you sure you want to logout?", [
+      { text: "Cancel", onPress: () => {}, style: "cancel" },
       { text: "Logout", onPress: logOut, style: "destructive" },
     ]);
   };

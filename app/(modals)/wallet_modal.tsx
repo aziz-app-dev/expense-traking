@@ -16,7 +16,6 @@ import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -24,6 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { showAlert } from "@/components/custom_alert";
 
 const WalletModal = () => {
   const oldWallet: { name: string; image: string; id: string } =
@@ -65,7 +65,7 @@ const WalletModal = () => {
     const { name, image } = walletData;
 
     if (!name.trim() || !image) {
-      Alert.alert("Wallet", "Please fill all the fields");
+      showAlert("Wallet", "Please fill all the fields");
       return;
     }
 
@@ -85,11 +85,11 @@ const WalletModal = () => {
         console.log(res);
         router.back();
       } else {
-        Alert.alert("Wallet", res.msg);
+        showAlert("Wallet", res.msg);
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Update failed");
+      showAlert("Error", "Update failed");
     } finally {
       setLoading(false);
     }
@@ -104,11 +104,11 @@ const WalletModal = () => {
       router.back();
     } else {
       setDelLoading(false);
-      Alert.alert("Wallet", res.msg);
+      showAlert("Wallet", res.msg);
     }
   };
   const showDeleteAlert = () => {
-    Alert.alert("Confirem", "Are Your sure?", [
+    showAlert("Confirm", "Are you sure you want to delete this wallet?", [
       {
         text: "cancle",
         onPress: () => {
