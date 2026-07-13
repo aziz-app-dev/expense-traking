@@ -27,10 +27,13 @@ const WalletList = ({ item, index, router }: Props) => {
     <Animated.View entering={FadeInDown.delay(index*50).springify().damping(40)}>
      <TouchableOpacity onPress={openWallet} style={styles.container}>
          <View style={styles.imageContianer}>
-        <Image
-          source={{ uri: item.image }} // 🔥 FIX
-          style={{ flex: 1 }}
-        />
+        {item.image ? (
+          <Image source={{ uri: item.image }} style={{ flex: 1 }} />
+        ) : (
+          <View style={styles.placeholder}>
+            <Ionicons name="wallet" size={26} color={Colors.neutral400} />
+          </View>
+        )}
       </View>
       <View style={styles.nameContiner}>
         <MyTxt fontSize={15} fontWeight={"600"}>
@@ -65,6 +68,12 @@ const styles = StyleSheet.create({
     borderRadius: AppSizes.borderRadius,
     borderCurve: "continuous",
     overflow: "hidden",
+  },
+  placeholder: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.neutral800,
   },
   nameContiner: {
     flex: 1,

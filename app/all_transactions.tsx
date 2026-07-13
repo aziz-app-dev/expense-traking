@@ -14,6 +14,7 @@ import { orderBy, where } from "@firebase/firestore";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -75,11 +76,8 @@ const AllTransactions = () => {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>(
     (params.period as PeriodFilter) || "all"
   );
-  // Filters are hidden behind the filter icon; open them if we arrived
-  // pre-filtered (e.g. "View all" from the statistics screen).
-  const [showFilters, setShowFilters] = useState<boolean>(
-    !!(params.period || params.type)
-  );
+  // Filters live in a popup modal opened from the filter icon.
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const hasActiveFilters = typeFilter !== "all" || periodFilter !== "all";
 
@@ -149,20 +147,27 @@ const AllTransactions = () => {
       {/* Header */}
       <View style={styles.header}>
         <BackBtn onPress={() => router.back()} />
-        <MyTxt fontSize={20} fontWeight="600">
+        <MyTxt
+          fontSize={20}
+          fontWeight="600"
+          align="center"
+          numberOfLines={1}
+          style={{ flex: 1 }}
+        >
           All Transactions
         </MyTxt>
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Search + filter toggle */}
+      {/* Search + filter button (opens the filter modal) */}
       <View style={styles.searchRow}>
         <View style={{ flex: 1 }}>
           <MyInput
-            placeholder="Search by description, category, amount..."
+            placeholder="Search transactions..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             marginVertical={0}
+            textAlign="center"
             leftIcon={
               <Ionicons name="search" size={20} color={Colors.neutral400} />
             }
@@ -182,74 +187,114 @@ const AllTransactions = () => {
         <TouchableOpacity
           style={[
             styles.filterIconBtn,
-            showFilters && styles.filterIconBtnActive,
+            hasActiveFilters && styles.filterIconBtnActive,
           ]}
-          onPress={() => setShowFilters((p) => !p)}
+          onPress={() => setFilterModalVisible(true)}
           activeOpacity={0.8}
         >
           <Ionicons
             name="options-outline"
             size={22}
-            color={showFilters ? Colors.black : Colors.white}
+            color={hasActiveFilters ? Colors.black : Colors.white}
           />
-          {hasActiveFilters && !showFilters && <View style={styles.filterDot} />}
         </TouchableOpacity>
       </View>
 
-      {/* Filters */}
-      {showFilters && (
-      <View style={styles.filtersBlock}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipRow}
-        >
-          {TYPE_FILTERS.map((f) => {
-            const active = typeFilter === f.value;
-            return (
-              <TouchableOpacity
-                key={f.value}
-                onPress={() => setTypeFilter(f.value)}
-                style={[styles.chip, active && styles.chipActive]}
-              >
-                <MyTxt
-                  fontSize={13}
-                  fontWeight="600"
-                  color={active ? Colors.black : Colors.neutral300}
-                >
-                  {f.label}
-                </MyTxt>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+      {/* Filter modal */}
+      <Modal
+        visible={filterModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => setFilterModalVisible(false)}
+        />
+        <View style={styles.filterSheet}>
+          <View style={styles.filterSheetHeader}>
+            <MyTxt fontSize={18} fontWeight="700">
+              Filters
+            </MyTxt>
+            <TouchableOpacity
+              onPress={() => setFilterModalVisible(false)}
+              hitSlop={10}
+            >
+              <Ionicons name="close" size={24} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipRow}
-        >
-          {PERIOD_FILTERS.map((f) => {
-            const active = periodFilter === f.value;
-            return (
-              <TouchableOpacity
-                key={f.value}
-                onPress={() => setPeriodFilter(f.value)}
-                style={[styles.chip, active && styles.chipActive]}
-              >
-                <MyTxt
-                  fontSize={13}
-                  fontWeight="600"
-                  color={active ? Colors.black : Colors.neutral300}
+          <MyTxt fontSize={13} color={Colors.neutral400}>
+            Type
+          </MyTxt>
+          <View style={styles.optionRow}>
+            {TYPE_FILTERS.map((f) => {
+              const active = typeFilter === f.value;
+              return (
+                <TouchableOpacity
+                  key={f.value}
+                  onPress={() => setTypeFilter(f.value)}
+                  style={[styles.chip, active && styles.chipActive]}
                 >
-                  {f.label}
-                </MyTxt>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-      )}
+                  <MyTxt
+                    fontSize={13}
+                    fontWeight="600"
+                    color={active ? Colors.black : Colors.neutral300}
+                  >
+                    {f.label}
+                  </MyTxt>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <MyTxt fontSize={13} color={Colors.neutral400} style={{ marginTop: 6 }}>
+            Time Period
+          </MyTxt>
+          <View style={styles.optionRow}>
+            {PERIOD_FILTERS.map((f) => {
+              const active = periodFilter === f.value;
+              return (
+                <TouchableOpacity
+                  key={f.value}
+                  onPress={() => setPeriodFilter(f.value)}
+                  style={[styles.chip, active && styles.chipActive]}
+                >
+                  <MyTxt
+                    fontSize={13}
+                    fontWeight="600"
+                    color={active ? Colors.black : Colors.neutral300}
+                  >
+                    {f.label}
+                  </MyTxt>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <View style={styles.filterActions}>
+            <TouchableOpacity
+              style={styles.clearBtn}
+              onPress={() => {
+                setTypeFilter("all");
+                setPeriodFilter("all");
+              }}
+            >
+              <MyTxt fontSize={14} fontWeight="600" color={Colors.white}>
+                Clear
+              </MyTxt>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.applyBtn}
+              onPress={() => setFilterModalVisible(false)}
+            >
+              <MyTxt fontSize={14} fontWeight="700" color={Colors.black}>
+                Apply
+              </MyTxt>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Results */}
       <View style={styles.resultsContainer}>
@@ -352,32 +397,64 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  filterDot: {
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+  filterSheet: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: Colors.primary,
-    borderWidth: 1,
-    borderColor: Colors.neutral900,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.neutral900,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: AppSizes.bodyPadding,
+    paddingBottom: 30,
+    gap: 10,
   },
-  filtersBlock: {
-    gap: 8,
+  filterSheetHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
   },
-  chipRow: {
+  optionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
-    paddingRight: 4,
   },
   chip: {
-    paddingVertical: 7,
+    paddingVertical: 9,
     paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: Colors.neutral800,
+    borderWidth: 1,
+    borderColor: Colors.neutral700,
   },
   chipActive: {
     backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  filterActions: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 18,
+  },
+  clearBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: AppSizes.borderRadius,
+    borderWidth: 1.5,
+    borderColor: Colors.neutral600,
+    alignItems: "center",
+  },
+  applyBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: AppSizes.borderRadius,
+    backgroundColor: Colors.primary,
+    alignItems: "center",
   },
   resultsContainer: {
     flex: 1,

@@ -467,7 +467,7 @@ const Statistics = () => {
         contentContainerStyle={{
           gap: 20,
           paddingTop: 5,
-          paddingBottom: 100,
+          paddingBottom: 140,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -520,23 +520,25 @@ const Statistics = () => {
           <>
         <View style={styles.chartContainer}>
           {chartData.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <BarChart
-                data={chartData}
-                barWidth={getBarWidth()}
-                spacing={getSpacing()}
-                barBorderRadius={AppSizes.borderRadius}
-                hideRules
-                yAxisLabelPrefix="Rs."
-                floatingYAxisLabels
-                yAxisThickness={0}
-                yAxisLabelWidth={60}
-                xAxisLabelTextStyle={{ color: Colors.neutral350, fontSize: 10 }}
-                yAxisTextStyle={{ color: Colors.neutral350 }}
-                noOfSections={4}
-                minHeight={5}
-              />
-            </ScrollView>
+            // BarChart scrolls its bars internally while keeping the Rs. y-axis
+            // fixed on the left (no outer ScrollView, so the axis stays put).
+            <BarChart
+              data={chartData}
+              barWidth={getBarWidth()}
+              spacing={getSpacing()}
+              barBorderRadius={AppSizes.borderRadius}
+              hideRules
+              yAxisLabelPrefix="Rs."
+              yAxisThickness={0}
+              yAxisLabelWidth={52}
+              xAxisLabelTextStyle={{ color: Colors.neutral350, fontSize: 10 }}
+              yAxisTextStyle={{ color: Colors.neutral350, fontSize: 10 }}
+              noOfSections={4}
+              minHeight={5}
+              initialSpacing={10}
+              endSpacing={40}
+              showScrollIndicator={false}
+            />
           ) : (
             <View style={styles.noChart}>
               <MyTxt fontSize={14} color={Colors.neutral350}>
