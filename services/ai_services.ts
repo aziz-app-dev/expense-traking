@@ -225,19 +225,21 @@ export const generateIncomeSuggestions = async (
       : `The user's current income is not known.`;
 
   const prompt =
-    `You are a practical career and income-growth coach. The user's field of interest is: ` +
-    `${industry}. ${incomeContext}\n\n` +
-    `Give specific, realistic ideas to earn and grow income in this field (amounts in ` +
-    `Pakistani Rupees, "Rs."). Use these exact headings:\n` +
-    `Income Streams: 3-4 concrete ways to earn in this field (jobs, freelance, side projects).\n` +
-    `Skills to Learn: 2-3 high-value skills that increase earning potential.\n` +
-    `Quick Wins: 2 practical things to start this month.\n` +
-    `Earning Potential: a realistic monthly income range in Rs. for this field.\n\n` +
-    `Be concrete, encouraging and specific to the field. Keep it under 200 words. ` +
-    `Do not use markdown symbols like # or *.`;
+    `You are a resourceful side-income coach. The user's field is: ${industry}. ` +
+    `${incomeContext}\n\n` +
+    `List 6 concrete, specific ways they can earn extra income in or around this field ` +
+    `(amounts in Pakistani Rupees, "Rs."). Format EACH idea EXACTLY like this, numbered ` +
+    `1 to 6, with a blank line between ideas:\n\n` +
+    `1. <short specific idea title>\n` +
+    `How: <one concise sentence on how to actually start it>\n` +
+    `Est: Rs. <realistic monthly range>\n\n` +
+    `Make the ideas specific and practical — name real platforms, tools or product types ` +
+    `where useful (e.g. Upwork, Fiverr, Play Store, Gumroad). Keep them varied across ` +
+    `freelancing, selling products, services, and passive income. No introduction or ` +
+    `closing text, just the 6 numbered ideas. Do not use markdown symbols like # or *.`;
 
   return callGroq(
-    "You are a practical, encouraging career and income coach who gives realistic, actionable advice.",
+    "You give concrete, specific, actionable side-income ideas — real gigs and products, not vague advice. Follow the requested format exactly.",
     prompt
   );
 };

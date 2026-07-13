@@ -553,8 +553,14 @@ const Statistics = () => {
             activeOpacity={0.85}
             onPress={() => runAi("report")}
           >
-            <Ionicons name="sparkles" size={16} color={Colors.black} />
-            <MyTxt fontSize={13} fontWeight="700" color={Colors.black}>
+            <Ionicons name="sparkles" size={15} color={Colors.black} />
+            <MyTxt
+              fontSize={13}
+              lineHeight={16}
+              fontWeight="700"
+              color={Colors.black}
+              numberOfLines={1}
+            >
               AI Report
             </MyTxt>
           </TouchableOpacity>
@@ -563,8 +569,14 @@ const Statistics = () => {
             activeOpacity={0.85}
             onPress={() => runAi("forecast")}
           >
-            <Ionicons name="trending-up" size={16} color={Colors.primary} />
-            <MyTxt fontSize={13} fontWeight="700" color={Colors.primary}>
+            <Ionicons name="trending-up" size={15} color={Colors.primary} />
+            <MyTxt
+              fontSize={13}
+              lineHeight={16}
+              fontWeight="700"
+              color={Colors.white}
+              numberOfLines={1}
+            >
               AI Forecast
             </MyTxt>
           </TouchableOpacity>
@@ -758,7 +770,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 6,
+    paddingHorizontal: 8,
     backgroundColor: Colors.primary,
     paddingVertical: 14,
     borderRadius: AppSizes.borderRadius,
@@ -767,7 +780,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 6,
+    paddingHorizontal: 8,
     paddingVertical: 14,
     borderRadius: AppSizes.borderRadius,
     borderWidth: 1.5,

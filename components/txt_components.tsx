@@ -10,6 +10,7 @@ type MyTxtProps = {
   lineHeight?: number;
   align?: TextStyle["textAlign"];
   style?: StyleProp<TextStyle>; // ✅ FIX
+  numberOfLines?: number;
 };
 
 

@@ -15,24 +15,43 @@ import {
 } from "react-native";
 import MyTxt from "./txt_components";
 
-// Render AI text with each "Heading:" label bolded.
+// Render AI text: numbered idea titles as bold headings, and "How:/Est:"
+// labels in bold too.
 const renderBody = (text: string) =>
   text.split("\n").map((raw, i) => {
     const line = raw.replace(/\*\*/g, "").replace(/^#+\s*/, "").trim();
-    if (!line) return <View key={i} style={{ height: 6 }} />;
+    if (!line) return <View key={i} style={{ height: 10 }} />;
+
+    // Numbered idea title, e.g. "1. Freelance app development"
+    const numbered = line.match(/^(\d+)\.\s+(.*)$/);
+    if (numbered) {
+      return (
+        <MyTxt
+          key={i}
+          fontSize={16}
+          fontWeight="700"
+          color={Colors.white}
+          style={{ marginTop: 6, marginBottom: 4 }}
+        >
+          {line}
+        </MyTxt>
+      );
+    }
+
+    // "How:" / "Est:" style label lines
     const idx = line.indexOf(":");
     const heading = idx > 0 ? line.slice(0, idx) : "";
     const isHeading = idx > 0 && idx <= 22 && /^[A-Za-z][A-Za-z ]*$/.test(heading);
     return (
       <MyTxt
         key={i}
-        fontSize={15}
+        fontSize={14}
         color={Colors.textLighter}
-        style={{ lineHeight: 23, marginBottom: 8 }}
+        style={{ lineHeight: 22, marginBottom: 4 }}
       >
         {isHeading ? (
           <>
-            <MyTxt fontSize={15} fontWeight="700" color={Colors.white}>
+            <MyTxt fontSize={14} fontWeight="700" color={Colors.primary}>
               {heading}:
             </MyTxt>
             {" " + line.slice(idx + 1).trim()}
