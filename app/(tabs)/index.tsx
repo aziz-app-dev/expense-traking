@@ -47,7 +47,7 @@ export default function HomeScreen() {
             {user?.name}
           </MyTxt>
         </View>
-        <TouchableOpacity style={styles.searchIcon} onPress={() => router.push("/(modals)/search_modal")}>
+        <TouchableOpacity style={styles.searchIcon} onPress={() => router.push("/all_transactions?title=Search&focus=1")}>
           <Ionicons
             name="search"
             size={AppSizes.bodyIcon}

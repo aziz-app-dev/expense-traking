@@ -76,8 +76,10 @@ const IncomeIdeas = ({
 }: Props) => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [moreLoading, setMoreLoading] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+  const [moreError, setMoreError] = useState("");
   const [industry, setIndustry] = useState("");
   const cache = useRef<Map<string, string>>(new Map());
 
@@ -99,6 +101,7 @@ const IncomeIdeas = ({
     setLoading(true);
     setText("");
     setError("");
+    setMoreError("");
 
     const cached = cache.current.get(cacheKey);
     if (cached) {
@@ -116,6 +119,41 @@ const IncomeIdeas = ({
       setError(res.msg || "Could not generate suggestions.");
     }
     setLoading(false);
+  };
+
+  // Fetch another batch of fresh ideas and append them (renumbered), telling
+  // the model which ones were already shown so it doesn't repeat.
+  const handleMore = async () => {
+    if (!industry || moreLoading) return;
+    setMoreLoading(true);
+    setMoreError("");
+
+    const existingTitles = (text.match(/^\s*\d+\.\s+(.*)$/gm) || []).map((l) =>
+      l.replace(/^\s*\d+\.\s+/, "").trim()
+    );
+    const startNum = existingTitles.length + 1;
+
+    const res = await generateIncomeSuggestions(
+      industry,
+      totalIncome,
+      existingTitles
+    );
+
+    if (res.success && res.report) {
+      let n = startNum;
+      const renumbered = res.report
+        .split("\n")
+        .map((line) => {
+          const m = line.trim().match(/^(\d+)\.\s+(.*)$/);
+          if (m) return `${n++}. ${m[2]}`;
+          return line;
+        })
+        .join("\n");
+      setText((prev) => `${prev.trimEnd()}\n\n${renumbered}`);
+    } else {
+      setMoreError(res.msg || "Could not load more ideas.");
+    }
+    setMoreLoading(false);
   };
 
   return (
@@ -210,7 +248,42 @@ const IncomeIdeas = ({
                 {error}
               </MyTxt>
             ) : text ? (
-              renderBody(text)
+              <>
+                {renderBody(text)}
+
+                {moreError ? (
+                  <MyTxt
+                    fontSize={13}
+                    color={Colors.rose}
+                    align="center"
+                    style={{ marginTop: 8 }}
+                  >
+                    {moreError}
+                  </MyTxt>
+                ) : null}
+
+                <TouchableOpacity
+                  style={styles.moreBtn}
+                  activeOpacity={0.85}
+                  disabled={moreLoading}
+                  onPress={handleMore}
+                >
+                  {moreLoading ? (
+                    <ActivityIndicator size="small" color={Colors.primary} />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name="add-circle-outline"
+                        size={18}
+                        color={Colors.primary}
+                      />
+                      <MyTxt fontSize={14} fontWeight="700" color={Colors.primary}>
+                        More Ideas
+                      </MyTxt>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
             ) : null}
           </ScrollView>
         </View>
@@ -231,6 +304,18 @@ const styles = StyleSheet.create({
     borderRadius: AppSizes.borderRadius,
     borderWidth: 1.5,
     borderColor: Colors.neutral700,
+    backgroundColor: Colors.neutral800,
+  },
+  moreBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 14,
+    paddingVertical: 13,
+    borderRadius: AppSizes.borderRadius,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
     backgroundColor: Colors.neutral800,
   },
   backdrop: {

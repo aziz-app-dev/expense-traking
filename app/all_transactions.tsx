@@ -67,7 +67,14 @@ const inPeriod = (date: Date, period: PeriodFilter): boolean => {
 
 const AllTransactions = () => {
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ period?: string; type?: string }>();
+  const params = useLocalSearchParams<{
+    period?: string;
+    type?: string;
+    title?: string;
+    focus?: string;
+  }>();
+  const screenTitle = params.title || "All Transactions";
+  const autoFocusSearch = params.focus === "1";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>(
@@ -154,7 +161,7 @@ const AllTransactions = () => {
           numberOfLines={1}
           style={{ flex: 1 }}
         >
-          All Transactions
+          {screenTitle}
         </MyTxt>
         <View style={{ width: 40 }} />
       </View>
@@ -167,6 +174,7 @@ const AllTransactions = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
             marginVertical={0}
+            autoFocus={autoFocusSearch}
             leftIcon={
               <Ionicons name="search" size={20} color={Colors.neutral400} />
             }

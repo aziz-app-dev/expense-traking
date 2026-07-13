@@ -208,10 +208,11 @@ export const INDUSTRIES = [
 
 export const generateIncomeSuggestions = async (
   industry: string,
-  monthlyIncome?: number
+  monthlyIncome?: number,
+  avoidTitles?: string[]
 ): Promise<AiResult> => {
   console.log(
-    `[AI] generateIncomeSuggestions → industry: ${industry}, income: ${monthlyIncome ?? "n/a"}`
+    `[AI] generateIncomeSuggestions → industry: ${industry}, income: ${monthlyIncome ?? "n/a"}, avoid: ${avoidTitles?.length ?? 0}`
   );
   if (!industry) {
     return { success: false, msg: "Please choose your field first." };
@@ -224,9 +225,15 @@ export const generateIncomeSuggestions = async (
         ).toLocaleString()}.`
       : `The user's current income is not known.`;
 
+  const avoidNote =
+    avoidTitles && avoidTitles.length
+      ? `\n\nThe user has ALREADY seen these ideas, so suggest 6 completely ` +
+        `DIFFERENT and fresh ones — do NOT repeat any of these: ${avoidTitles.join("; ")}.`
+      : "";
+
   const prompt =
     `You are a resourceful side-income coach. The user's field is: ${industry}. ` +
-    `${incomeContext}\n\n` +
+    `${incomeContext}${avoidNote}\n\n` +
     `List 6 concrete, specific ways they can earn extra income in or around this field ` +
     `(amounts in Pakistani Rupees, "Rs."). Format EACH idea EXACTLY like this, numbered ` +
     `1 to 6, with a blank line between ideas:\n\n` +
