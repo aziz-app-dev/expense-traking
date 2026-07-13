@@ -77,7 +77,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       router.replace("/(tabs)");
     } catch (error) {
+      // Usually a network/offline error. Fall back to the basic auth info so
+      // the app still opens; Firestore listeners will sync once back online.
       console.log("Error fetching user profile:", error);
+      setUser({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName,
+      });
+      router.replace("/(tabs)");
     }
   });
 

@@ -52,6 +52,35 @@ A cross-platform personal-finance app to track **wallets**, log **income & expen
 
 ---
 
+## 🤖 AI Integration
+
+The app integrates **[Groq](https://groq.com)** (OpenAI-compatible API) running the
+**`llama-3.3-70b-versatile`** model to turn raw transactions into useful, plain-English
+insights. All AI logic lives in [`services/ai_services.ts`](services/ai_services.ts).
+
+### What it powers
+
+| Feature | What it does | Data sent to the model |
+|---|---|---|
+| **AI Report** | Summarizes the selected period — overview, top spending, savings, tips | An **aggregated summary** (totals + per-category breakdown), not raw docs |
+| **AI Forecast** | Predicts next week/month/year and renders it as a **bar chart** (recent periods + predicted "Next") | Per-period income/expense **history**; returns strict JSON for the chart |
+| **Grow My Income** | Concrete, numbered side-hustle ideas tailored to a chosen field (e.g. *Software Development*), each with a how-to and an estimated monthly range | The selected **industry** + total recorded income as loose context |
+
+### How it works
+
+1. Transactions are **aggregated locally** (per-category totals, per-period history) before any request — raw documents are never shipped to the model, keeping calls small and fast.
+2. Requests go to `https://api.groq.com/openai/v1/chat/completions` with the key from `EXPO_PUBLIC_GROQ_API_KEY`. The forecast uses **JSON mode** (`response_format: json_object`) so its numbers can drive the chart.
+3. Results are **cached** by a signature of the underlying data (period + kind + transactions, or industry + income bracket). If nothing changed, the previous result is reused — **no repeat API call**.
+4. The industry preference for **Grow My Income** is remembered across launches via **AsyncStorage**.
+5. Every AI call is **logged** (`[AI] …`) so you can trace key presence, request status, timing, and token usage in the Metro console.
+
+> **Setup:** add `EXPO_PUBLIC_GROQ_API_KEY` to `.env` (get a free key at
+> [console.groq.com/keys](https://console.groq.com/keys)) and restart with
+> `npx expo start -c`. Since `EXPO_PUBLIC_*` values are bundled into the client,
+> proxy AI calls through a backend for production.
+
+---
+
 ## 🖼️ Screenshots
 
 > _Add your screenshots to `assets/screenshots/` and drop them in below._
