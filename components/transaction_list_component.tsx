@@ -18,12 +18,14 @@ const TransactionList = ({
   title,
   emptyListMsg,
   onViewAll,
+  titleSize = 20,
+  fill = false,
 }: TransactionListType) => {
   const handelClick = () => {};
   return (
-    <View style={styles.continer}>
+    <View style={[styles.continer, fill && styles.fill]}>
       <View style={styles.titleRow}>
-        <MyTxt fontWeight={"600"} fontSize={20} color={Colors.white}>
+        <MyTxt fontWeight={"600"} fontSize={titleSize} color={Colors.white}>
           {title}
         </MyTxt>
         {onViewAll && (
@@ -34,9 +36,11 @@ const TransactionList = ({
           </TouchableOpacity>
         )}
       </View>
-      <View style={styles.list}>
+      <View style={[styles.list, fill && styles.fill]}>
         <FlashList
           data={data}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={fill ? { paddingBottom: 90 } : undefined}
           renderItem={({ item, index }) => (
             <TransactionItme
               item={item}
@@ -154,6 +158,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  fill: {
+    flex: 1,
   },
   list: {
     minHeight: 3,
