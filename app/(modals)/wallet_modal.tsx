@@ -131,7 +131,7 @@ const WalletModal = () => {
         {/* Header */}
         <View style={styles.header}>
           <BackBtn onPress={() => router.back()} />
-          <MyTxt fontSize={20} fontWeight="600">
+          <MyTxt fontSize={20} lineHeight={28} fontWeight="600">
             {oldWallet?.id ? "Update Wallet" : "New Wallet"}
           </MyTxt>
           <View />

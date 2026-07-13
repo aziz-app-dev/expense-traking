@@ -167,7 +167,6 @@ const AllTransactions = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
             marginVertical={0}
-            textAlign="center"
             leftIcon={
               <Ionicons name="search" size={20} color={Colors.neutral400} />
             }
@@ -239,6 +238,7 @@ const AllTransactions = () => {
                   <MyTxt
                     fontSize={13}
                     fontWeight="600"
+                    numberOfLines={1}
                     color={active ? Colors.black : Colors.neutral300}
                   >
                     {f.label}
@@ -263,6 +263,7 @@ const AllTransactions = () => {
                   <MyTxt
                     fontSize={13}
                     fontWeight="600"
+                    numberOfLines={1}
                     color={active ? Colors.black : Colors.neutral300}
                   >
                     {f.label}

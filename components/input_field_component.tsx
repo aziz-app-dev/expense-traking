@@ -78,6 +78,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 48,
+    paddingVertical: 0,
+    textAlignVertical: "center",
   },
   leftIcon: {
     position: "absolute",

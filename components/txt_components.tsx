@@ -18,12 +18,15 @@ const MyTxt = ({
   children,
   fontSize = 14,
   fontWeight = "400",
-  lineHeight = 20,
+  lineHeight,
   color = Colors.white,
   align = "left",
   style,
   ...rest
 }: MyTxtProps) => {
+  // Default the line height to ~1.4x the font size so descenders (g, p, y)
+  // are never clipped on larger text. Explicit lineHeight always wins.
+  const resolvedLineHeight = lineHeight ?? Math.round(fontSize * 1.4);
   return (
     <Text
       {...rest}
@@ -32,7 +35,7 @@ const MyTxt = ({
         {
           fontSize,
           fontWeight,
-          lineHeight,
+          lineHeight: resolvedLineHeight,
           color,
           textAlign: align,
         },
